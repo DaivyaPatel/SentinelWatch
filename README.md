@@ -1,4 +1,4 @@
-echo "# SentinelWatch Detection Module
+# SentinelWatch Detection Module
 
 ## Setup
 pip install -r requirements.txt
@@ -7,4 +7,4 @@ pip install -r requirements.txt
 python detection.py
 
 ## Output
-Saves alerts to alerts.json" > README.md
+Saves alerts to alerts.json
