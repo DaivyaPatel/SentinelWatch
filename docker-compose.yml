@@ -1,0 +1,123 @@
+# ============================================================
+# Docker Compose — Urban Safety AI System
+# Services: FastAPI App, PostgreSQL, Redis, Celery Worker
+# ============================================================
+
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: urban_safety_db
+    environment:
+      POSTGRES_DB: urban_safety_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urban_safety_net
+
+  # ── Redis (Celery broker + cache) ──
+  redis:
+    image: redis:7-alpine
+    container_name: urban_safety_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urban_safety_net
+
+  # ── FastAPI Application ──
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urban_safety_app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/urban_safety_db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      JWT_SECRET_KEY: change-this-in-production-very-secret
+      DEBUG: "True"
+      YOLO_MODEL_PATH: yolov8n.pt
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - urban_safety_net
+    restart: unless-stopped
+
+  # ── Celery Worker (detection + notifications) ──
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urban_safety_celery
+    command: >
+      celery -A app.tasks.celery_app worker
+      --loglevel=info
+      --concurrency=2
+      -Q detection,notifications
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/urban_safety_db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      YOLO_MODEL_PATH: yolov8n.pt
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - urban_safety_net
+    restart: unless-stopped
+
+  # ── Celery Beat (optional scheduled tasks) ──
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urban_safety_beat
+    command: >
+      celery -A app.tasks.celery_app beat
+      --loglevel=info
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - urban_safety_net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  urban_safety_net:
+    driver: bridge
