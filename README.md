@@ -1,4 +1,4 @@
-# 🛡️ AI-Powered Urban Safety System
+# AI-Powered Urban Safety System
 
 > Autonomous Drone Dispatch with YOLOv8 Detection, Real-Time WebSockets, and Intelligent Fleet Management
 
@@ -20,7 +20,7 @@
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -46,7 +46,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1: Docker Compose (Recommended)
 
@@ -102,7 +102,7 @@ celery -A app.tasks.celery_app worker --loglevel=info -Q detection,notifications
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication
 | Method | Endpoint | Description |
@@ -170,7 +170,7 @@ celery -A app.tasks.celery_app worker --loglevel=info -Q detection,notifications
 
 ---
 
-## 🔌 WebSocket Channels
+## WebSocket Channels
 
 | Endpoint | Events | Description |
 |----------|--------|-------------|
@@ -190,7 +190,7 @@ ws.onmessage = (event) => {
 
 ---
 
-## 📝 API Examples
+## API Examples
 
 ### Register User
 ```bash
@@ -270,7 +270,7 @@ curl -X POST http://localhost:8000/api/v1/detection/analyze \
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── app/
@@ -304,7 +304,7 @@ curl -X POST http://localhost:8000/api/v1/detection/analyze \
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 All settings are managed via environment variables (`.env` file):
 
@@ -321,7 +321,7 @@ All settings are managed via environment variables (`.env` file):
 
 ---
 
-## 🔐 Default Credentials (After Seeding)
+## Default Credentials (After Seeding)
 
 | Role | Username | Password |
 |------|----------|----------|
@@ -330,7 +330,7 @@ All settings are managed via environment variables (`.env` file):
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run tests
@@ -341,5 +341,3 @@ pytest tests/ -v --cov=app
 ```
 
 ---
-
-Built with ❤️ for urban safety using AI + autonomous systems.
